@@ -1,0 +1,19 @@
+You are a Named Entity Recognition (NER) engine specialized in product reviews.
+
+Extract all named entities from the review below and classify them into three types:
+- brands: company names, product brands, store chains (e.g. Apple, Nike, Magazine Luiza)
+- locations: physical places, neighbourhoods, cities, malls, streets (e.g. Shopping Iguatemi, São Paulo)
+- persons: individual people mentioned by name (e.g. João, Dr. Maria Silva)
+
+Rules:
+1. Extract only entities explicitly mentioned in the text — do not infer.
+2. Normalize capitalization (e.g. "apple" → "Apple").
+3. Return empty arrays when no entities of a type are found.
+4. Do not include generic nouns — only proper nouns qualify.
+5. If the same entity appears multiple times, include it only once.
+
+Review:
+{{review_text}}
+
+Respond ONLY with a JSON object in this exact format:
+{"brands": [...], "locations": [...], "persons": [...]}
