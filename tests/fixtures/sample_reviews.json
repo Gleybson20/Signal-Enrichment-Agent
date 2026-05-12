@@ -1,0 +1,62 @@
+[
+  {
+    "review_id": "rev_001",
+    "product_id": "prod_123",
+    "review_text": "Produto excelente, chegou rápido e bem embalado. Superou expectativas.",
+    "date": "2024-06-01"
+  },
+  {
+    "review_id": "rev_002",
+    "product_id": "prod_456",
+    "review_text": "Fone sem fio com cancelamento de ruído. Qualidade de som impressionante.",
+    "date": "2024-06-02"
+  },
+  {
+    "review_id": "rev_003",
+    "product_id": "prod_789",
+    "review_text": "Produto chegou quebrado. O suporte não ajudou e não recebi reembolso.",
+    "date": "2024-06-03"
+  },
+  {
+    "review_id": "rev_004",
+    "product_id": "prod_101",
+    "review_text": "Comprei na Apple Store do Shopping Iguatemi. Atendimento impecável.",
+    "date": "2024-06-04"
+  },
+  {
+    "review_id": "rev_005",
+    "product_id": "prod_102",
+    "review_text": "Produto ok. Nem bom nem ruim. Entrega dentro do prazo.",
+    "date": "2024-06-05"
+  },
+  {
+    "review_id": "rev_006",
+    "product_id": "prod_103",
+    "review_text": "Tênis Nike Air Max confortável. Comprei na loja da Rua Oscar Freire.",
+    "date": "2024-06-06"
+  },
+  {
+    "review_id": "rev_007",
+    "product_id": "prod_104",
+    "review_text": "Livro chegou com páginas rasgadas. Decepcionante para um presente.",
+    "date": "2024-06-07"
+  },
+  {
+    "review_id": "rev_008",
+    "product_id": "prod_105",
+    "review_text": "Smart TV Samsung 55 polegadas. Imagem excelente e instalação simples.",
+    "date": "2024-06-08"
+  },
+  {
+    "review_id": "rev_009",
+    "product_id": "prod_106",
+    "review_text": "Creme hidratante sem fragrância. Pele ficou macia após primeira semana.",
+    "date": "2024-06-09"
+  },
+  {
+    "review_id": "rev_010",
+    "product_id": "prod_107",
+    "review_text": "Entrega demorou três semanas. Produto sem embalagem protetora.",
+    "date": "2024-06-10"
+  }
+]

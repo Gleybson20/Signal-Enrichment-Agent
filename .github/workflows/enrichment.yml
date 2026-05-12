@@ -1,0 +1,138 @@
+name: Enrichment Pipeline
+
+on:
+  # Triggered manually or by the ingestion pipeline completing
+  workflow_dispatch:
+    inputs:
+      batch_size:
+        description: "Records per batch"
+        required: false
+        default: "50"
+      run_id:
+        description: "Custom run ID (leave blank to auto-generate)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Fetch pending count only, do not enrich"
+        type: boolean
+        required: false
+        default: false
+
+  # Called by the ingestion pipeline (project 1)
+  workflow_run:
+    workflows: ["Ingestion Pipeline"]
+    types: [completed]
+
+jobs:
+  enrich:
+    name: Run Enrichment Agent
+    runs-on: ubuntu-latest
+    # Only run on success of the triggering workflow (or on manual dispatch)
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      DUCKDB_PATH: ${{ vars.DUCKDB_PATH || 'data/warehouse.duckdb' }}
+      BUDGET_USD: ${{ vars.ENRICHMENT_BUDGET_USD || '5.00' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: pytest tests/ -v --tb=short
+
+      - name: Download DuckDB artifact from ingestion run
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v4
+        with:
+          name: duckdb-silver
+          path: data/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Count pending records (dry-run check)
+        id: pending_count
+        run: |
+          python - <<'EOF'
+          from pathlib import Path
+          from io.duckdb_reader import DuckDBReader
+          reader = DuckDBReader(db_path=Path("${{ env.DUCKDB_PATH }}"))
+          count = reader.count_pending()
+          print(f"Pending records: {count}")
+          with open("$GITHUB_OUTPUT", "a") as f:
+              f.write(f"count={count}\n")
+          EOF
+
+      - name: Exit early if nothing to enrich
+        if: steps.pending_count.outputs.count == '0'
+        run: |
+          echo "No pending records. Skipping enrichment."
+          exit 0
+
+      - name: Run enrichment pipeline
+        if: >
+          steps.pending_count.outputs.count != '0' &&
+          github.event.inputs.dry_run != 'true'
+        run: |
+          python - <<'EOF'
+          import os
+          from pathlib import Path
+          from agents.base_agent import AgentConfig
+          from agents.sentiment_agent import SentimentAgent
+          from agents.category_agent import CategoryAgent
+          from agents.entity_agent import EntityAgent
+          from io.duckdb_reader import DuckDBReader
+          from io.duckdb_writer import DuckDBWriter
+          from orchestration.batch_processor import BatchProcessor, BatchProcessorConfig
+          from orchestration.rate_limiter import RateLimiter
+
+          db_path = Path(os.environ["DUCKDB_PATH"])
+          config = BatchProcessorConfig(
+              batch_size=int("${{ github.event.inputs.batch_size || '50' }}"),
+              budget_usd=float(os.environ.get("BUDGET_USD", "5.0")),
+          )
+          agent_config = AgentConfig(model="gpt-4o", max_retries=3)
+
+          processor = BatchProcessor(
+              config=config,
+              reader=DuckDBReader(db_path=db_path),
+              writer=DuckDBWriter(db_path=db_path),
+              sentiment_agent=SentimentAgent.from_env(agent_config),
+              category_agent=CategoryAgent.from_env(agent_config),
+              entity_agent=EntityAgent.from_env(agent_config),
+              rate_limiter=RateLimiter(rpm=500, tpm=30_000),
+          )
+
+          run_id = "${{ github.event.inputs.run_id }}" or None
+          summary = processor.run(run_id=run_id)
+          print(summary)
+          EOF
+
+      - name: Upload enriched DuckDB artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: duckdb-gold
+          path: data/
+          retention-days: 7
+
+      - name: Upload cost log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cost-log-${{ github.run_id }}
+          path: logs/cost.jsonl
+          retention-days: 30
+          if-no-files-found: ignore
