@@ -264,7 +264,7 @@ O `CostTracker` mantém totais acumulados em memória e por agente/modelo. Confi
 
 ## CI/CD
 
-O workflow `.github/workflows/enrichment.yml` é disparado automaticamente quando o pipeline de ingestão (projeto 1) termina com sucesso. A cadeia completa:
+O workflow `.github/workflows/enrichment.yml` é disparado automaticamente quando o pipeline de ingestão (Data Ingress Framework) termina com sucesso. A cadeia completa:
 
 ```
 Ingestão roda → dados chegam no Silver → Enriquecimento roda → dados chegam no Gold
