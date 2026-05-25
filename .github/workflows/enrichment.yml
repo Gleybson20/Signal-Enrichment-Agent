@@ -1,7 +1,6 @@
 name: Enrichment Pipeline
 
 on:
-  # Triggered manually or by the ingestion pipeline completing
   workflow_dispatch:
     inputs:
       batch_size:
@@ -18,7 +17,6 @@ on:
         required: false
         default: false
 
-  # Called by the ingestion pipeline (project 1)
   workflow_run:
     workflows: ["Ingestion Pipeline"]
     types: [completed]
@@ -27,7 +25,6 @@ jobs:
   enrich:
     name: Run Enrichment Agent
     runs-on: ubuntu-latest
-    # Only run on success of the triggering workflow (or on manual dispatch)
     if: >
       github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success'

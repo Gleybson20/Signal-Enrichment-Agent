@@ -44,14 +44,7 @@ class BatchProcessorConfig:
     run_entity: bool = True
     checkpoint_dir: str = ".checkpoints"
     cost_log_path: str = "logs/cost.jsonl"
-    budget_usd: Optional[float] = None   # Hard stop when exceeded
-
-
-# ---------------------------------------------------------------------------
-# Processor
-# ---------------------------------------------------------------------------
-
-
+    budget_usd: Optional[float] = None
 class BatchProcessor:
     """
     Orchestrates the full enrichment pipeline for a dataset.

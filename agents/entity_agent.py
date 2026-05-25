@@ -15,9 +15,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
-
 from openai import OpenAI
-
 from agents.base_agent import AgentConfig, AgentResult, BaseAgent
 
 logger = logging.getLogger(__name__)
